@@ -13,6 +13,8 @@
 	ALAssetsGroup *assetGroup;
 	
 	NSMutableArray *elcAssets;
+    NSMutableArray *createdCells;
+    NSThread *backgroundThread;
 	int selectedAssets;
 	
 	id parent;

@@ -5,6 +5,7 @@
 //  Copyright 2011 ELC Technologies. All rights reserved.
 //
 
+#import <AssetsLibrary/AssetsLibrary.h>
 #import "ELCAlbumPickerController.h"
 #import "ELCImagePickerController.h"
 #import "ELCAssetTablePicker.h"
@@ -16,9 +17,20 @@
 #pragma mark -
 #pragma mark View lifecycle
 
+
+- (void)viewDidAppear:(BOOL)animated{
+    
+    [super viewDidAppear:animated];
+    if(hasError)[self.parent cancelImagePicker];
+    
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-	
+    
+	self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+    
 	[self.navigationItem setTitle:@"Loading..."];
 
     UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self.parent action:@selector(cancelImagePicker)];
@@ -37,34 +49,40 @@
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         
         // Group enumerator Block
-        void (^assetGroupEnumerator)(ALAssetsGroup *, BOOL *) = ^(ALAssetsGroup *group, BOOL *stop) 
-        {
-            if (group == nil) 
-            {
-                return;
-            }
+        // used to be
+        // void(^assetGroupEnumerator)(struct ALAssetsGroup *, BOOL *) = ^(ALAssetsGroup *group, BOOL *stop){
+        //
+        // but now is:
+        void(^assetGroupEnumerator)(ALAssetsGroup *, BOOL *) = ^(ALAssetsGroup *group, BOOL *stop){
             
-            [self.assetGroups addObject:group];
+            if(group == nil)return;
 
+            [self.assetGroups addObject:group];
+            
+            // Keep this line!  w/o it the asset count is broken for some reason.  Makes no sense
+            [group numberOfAssets];
+            //NSLog(@"count: %d", [group numberOfAssets]);
+            //NSLog(@"group: %@",group);
+            
             // Reload albums
             [self performSelectorOnMainThread:@selector(reloadTableView) withObject:nil waitUntilDone:YES];
         };
         
         // Group Enumerator Failure Block
-        void (^assetGroupEnumberatorFailure)(NSError *) = ^(NSError *error) {
+        void(^assetGroupEnumberatorFailure)(NSError *) = ^(NSError *error){
             
-            UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Error" message:[NSString stringWithFormat:@"Album Error: %@ - %@", [error localizedDescription], [error localizedRecoverySuggestion]] delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil];
-            [alert show];
-            [alert release];
+            //UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Error" message:[NSString stringWithFormat:@"Album Error: %@", [error description]] delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil];
+            //[alert show];
+            //[alert release];
+            NSLog(@"A problem occured %@", [error description]);
+            hasError = TRUE;
             
-            NSLog(@"A problem occured %@", [error description]);	                                 
         };	
                 
         // Enumerate Albums
         [library enumerateGroupsWithTypes:ALAssetsGroupAll
                                usingBlock:assetGroupEnumerator 
                              failureBlock:assetGroupEnumberatorFailure];
-        
         [pool release];
     });    
 }

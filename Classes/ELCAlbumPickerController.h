@@ -13,6 +13,7 @@
 	NSMutableArray *assetGroups;
 	NSOperationQueue *queue;
 	id parent;
+    BOOL hasError;
     
     ALAssetsLibrary *library;
 }

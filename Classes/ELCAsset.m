@@ -7,30 +7,26 @@
 
 #import "ELCAsset.h"
 #import "ELCAssetTablePicker.h"
+#import "UIImage+Resize.h"
 
 @implementation ELCAsset
 
 @synthesize asset;
 @synthesize parent;
 
-- (id)initWithFrame:(CGRect)frame {
-    if ((self = [super initWithFrame:frame])) {
-        // Initialization code
-    }
-    return self;
-}
-
 -(id)initWithAsset:(ALAsset*)_asset {
 	
-	if (self = [super initWithFrame:CGRectMake(0, 0, 0, 0)]) {
+	if (self = [super initWithFrame:CGRectMake(0, 0, 75, 75)]) {
 		
 		self.asset = _asset;
 		
 		CGRect viewFrames = CGRectMake(0, 0, 75, 75);
-		
+		UIImage * bigThumb = [[UIImage alloc] initWithCGImage: [self.asset thumbnail]];
+        UIImage * littleThumb = [bigThumb resizedImage: viewFrames.size interpolationQuality: kCGInterpolationLow];
 		UIImageView *assetImageView = [[UIImageView alloc] initWithFrame:viewFrames];
 		[assetImageView setContentMode:UIViewContentModeScaleToFill];
-		[assetImageView setImage:[UIImage imageWithCGImage:[self.asset thumbnail]]];
+		[assetImageView setImage:littleThumb];
+        [bigThumb release];
 		[self addSubview:assetImageView];
 		[assetImageView release];
 		
@@ -38,6 +34,7 @@
 		[overlayView setImage:[UIImage imageNamed:@"Overlay.png"]];
 		[overlayView setHidden:YES];
 		[self addSubview:overlayView];
+        [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(toggleSelection)]];
     }
     
 	return self;	
@@ -69,6 +66,9 @@
 
 - (void)dealloc 
 {    
+    UIGestureRecognizer * recognizer = [self.gestureRecognizers objectAtIndex: 0];
+    [self removeGestureRecognizer: recognizer];
+    [recognizer release];
     self.asset = nil;
 	[overlayView release];
     [super dealloc];
