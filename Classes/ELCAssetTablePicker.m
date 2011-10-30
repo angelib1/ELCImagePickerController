@@ -49,14 +49,27 @@
     {
         length = 3;
     }
-     
-    NSRange subarrayRange = NSMakeRange(startOfRange, length);
-    for(ELCAsset * elcAsset in [self.elcAssets subarrayWithRange: subarrayRange])
+    
+    if(length > 0)
     {
-        if([elcAsset superview] != NULL)
-            return NO;
+        NSRange subarrayRange = NSMakeRange(startOfRange, length);
+        NSArray * elcAssetSubarray = NULL;
+        @try {
+            elcAssetSubarray = [self.elcAssets subarrayWithRange:subarrayRange];
+        }
+        @catch( NSException * exception )
+        {
+            NSLog( @"exception raised in okayToRedraw - location %d length %d %@ %@", 
+                  startOfRange, length, [exception name], [exception reason] );
+        }
+        @finally {
+            for(ELCAsset * elcAsset in elcAssetSubarray)
+            {
+                if([elcAsset superview] != NULL)
+                    return NO;
+            }
+        }
     }
-
     return YES;
 }
 
@@ -86,6 +99,7 @@
              NSArray * visibleCells = [self.tableView indexPathsForVisibleRows];
              elcAsset.tag = index;
              [self.elcAssets addObject:elcAsset];
+             [elcAsset release];
 
              // check to see if this newly created asset is on a row that is currently visible in the table view
              if(visibleCells)
@@ -150,8 +164,7 @@
 
 - (void) doneAction:(id)sender {
 	
-	NSMutableArray *selectedAssetsImages = [[[NSMutableArray alloc] init] autorelease];
-    
+	NSMutableArray *selectedAssetsImages = [[NSMutableArray alloc] initWithCapacity:24];
     if(backgroundThread)
     {
         //NSLog( @"calling cancel on background thread" );
@@ -170,14 +183,7 @@
         
     [(ELCAlbumPickerController*)self.parent selectedAssets:selectedAssetsImages];
     
-    if(createdCells)
-    {
-        [NSThread detachNewThreadSelector: @selector(deallocArrays:) toTarget:self withObject:createdCells];
-    }
-    if(elcAssets)
-    {
-        [NSThread detachNewThreadSelector: @selector(deallocArrays:) toTarget:self withObject:elcAssets];
-    }
+    [selectedAssetsImages release];
 }
 
 #pragma mark UITableViewDataSource Delegate Methods
@@ -246,6 +252,7 @@
         NSLog( @"ROW %d brand new cell %p", indexPath.row, cell );
 #endif
         [createdCells addObject: cell];
+        [cell release];
         cell.tag = indexPath.row;
     }	
 	else
@@ -280,23 +287,11 @@
     return count;
 }
 
-- (void) deallocArrays: (NSArray *) arrayToRelease
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    pthread_setname_np("deallocArrays Thread");
-
-    for(id thing in arrayToRelease)
-    {
-        [thing release];
-    }
-    [arrayToRelease release];
-    [pool release];
-}
-
 - (void)dealloc 
 {
-    // elcAssets and createdCells also needed to be released, but we do that in the "done" action...
+    [createdCells release];
+    [elcAssets release];
+    
     [selectedAssetsLabel release];
     [super dealloc];    
 }
