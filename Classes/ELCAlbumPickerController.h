@@ -11,7 +11,6 @@
 @interface ELCAlbumPickerController : UITableViewController {
 	
 	NSMutableArray *assetGroups;
-	NSOperationQueue *queue;
 	id parent;
     BOOL hasError;
     

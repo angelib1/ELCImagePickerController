@@ -15,11 +15,8 @@
 	NSMutableArray *elcAssets;
     NSMutableArray *createdCells;
     NSThread *backgroundThread;
-	int selectedAssets;
-	
 	id parent;
 	
-	NSOperationQueue *queue;
 }
 
 @property (nonatomic, assign) id parent;
@@ -29,7 +26,6 @@
 
 -(int)totalSelectedAssets;
 -(void)preparePhotos;
-
 -(void)doneAction:(id)sender;
 
 @end
