@@ -9,7 +9,7 @@
 #import "ELCImagePickerController.h"
 #import "ELCAsset.h"
 #import "ELCAssetCell.h"
-#import "ELCAssetTablePicker.h"
+//#import "ELCAssetTablePicker.h"
 #import "ELCAlbumPickerController.h"
 
 @implementation ELCImagePickerController
@@ -24,7 +24,8 @@
 
 -(void)selectedAssets:(NSArray*)_assets {
 
-	NSMutableArray *returnArray = [[[NSMutableArray alloc] init] autorelease];
+	//NSMutableArray *returnArray = [[[NSMutableArray alloc] init] autorelease];
+	NSMutableArray *returnArray = [[NSMutableArray alloc] init];
 	
 	for(ALAsset *asset in _assets) {
 
@@ -42,8 +43,9 @@
     [[self parentViewController] dismissModalViewControllerAnimated:YES];
     
 	if([delegate respondsToSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:)]) {
-		[delegate performSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:) withObject:self withObject:[NSArray arrayWithArray:returnArray]];
+		[delegate performSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:) withObject:self withObject:returnArray]; // [NSArray arrayWithArray:returnArray]];
 	}
+    [returnArray release];
 }
 
 #pragma mark -
@@ -61,7 +63,6 @@
 
 
 - (void)dealloc {
-    NSLog(@"deallocing ELCImagePickerController");
     [super dealloc];
 }
 
