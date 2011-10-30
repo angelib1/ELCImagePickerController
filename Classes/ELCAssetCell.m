@@ -39,7 +39,6 @@
 	
 	for(ELCAsset *elcAsset in self.rowAssets) {
 		[elcAsset setFrame:frame];
-		[elcAsset addGestureRecognizer:[[[UITapGestureRecognizer alloc] initWithTarget:elcAsset action:@selector(toggleSelection)] autorelease]];
 		[self addSubview:elcAsset];
 		
 		frame.origin.x = frame.origin.x + frame.size.width + 4;

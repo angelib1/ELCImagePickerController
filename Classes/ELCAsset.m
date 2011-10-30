@@ -34,14 +34,17 @@
 		[overlayView setImage:[UIImage imageNamed:@"Overlay.png"]];
 		[overlayView setHidden:YES];
 		[self addSubview:overlayView];
-        [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(toggleSelection)]];
+
+        UITapGestureRecognizer * recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(toggleSelection)];
+        [self addGestureRecognizer:recognizer];
+        [recognizer release];
+
     }
     
 	return self;	
 }
 
 -(void)toggleSelection {
-    
 	overlayView.hidden = !overlayView.hidden;
     
 //    if([(ELCAssetTablePicker*)self.parent totalSelectedAssets] >= 10) {
@@ -55,12 +58,10 @@
 }
 
 -(BOOL)selected {
-	
 	return !overlayView.hidden;
 }
 
 -(void)setSelected:(BOOL)_selected {
-    
 	[overlayView setHidden:!_selected];
 }
 
@@ -68,7 +69,8 @@
 {    
     UIGestureRecognizer * recognizer = [self.gestureRecognizers objectAtIndex: 0];
     [self removeGestureRecognizer: recognizer];
-    [recognizer release];
+
+    [self removeFromSuperview];
     self.asset = nil;
 	[overlayView release];
     [super dealloc];
