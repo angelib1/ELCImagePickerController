@@ -22,13 +22,23 @@
 	}
 }
 
--(void)selectedAssets:(NSArray*)_assets {
+-(void)updateInterface:(NSArray*)returnArray{
+    
+    [self popToRootViewControllerAnimated:NO];
+    
+    [[self parentViewController] dismissModalViewControllerAnimated:YES];
+    
+	if([delegate respondsToSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:)]) {
+		[delegate performSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:) withObject:self withObject:[NSArray arrayWithArray:returnArray]];
+	}
+}
 
-	//NSMutableArray *returnArray = [[[NSMutableArray alloc] init] autorelease];
+-(void)calculateDictionary:(NSArray*)_assets{
+    NSAutoreleasePool *pool=[[NSAutoreleasePool alloc] init];
+
 	NSMutableArray *returnArray = [[NSMutableArray alloc] init];
 	
 	for(ALAsset *asset in _assets) {
-
 		NSMutableDictionary *workingDictionary = [[NSMutableDictionary alloc] init];
 		[workingDictionary setObject:[asset valueForProperty:ALAssetPropertyType] forKey:@"UIImagePickerControllerMediaType"];
         [workingDictionary setObject:[UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]] forKey:@"UIImagePickerControllerOriginalImage"];
@@ -37,15 +47,14 @@
 		[returnArray addObject:workingDictionary];
 		
 		[workingDictionary release];	
-	}
-	
-    [self popToRootViewControllerAnimated:NO];
-    [[self parentViewController] dismissModalViewControllerAnimated:YES];
-    
-	if([delegate respondsToSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:)]) {
-		[delegate performSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:) withObject:self withObject:returnArray]; // [NSArray arrayWithArray:returnArray]];
-	}
+    }
+    [self performSelectorOnMainThread:@selector(updateInterface:) withObject:returnArray waitUntilDone:YES];
     [returnArray release];
+    [pool release];
+}
+
+-(void)selectedAssets:(NSArray*)_assets {
+    [NSThread detachNewThreadSelector:@selector(calculateDictionary:) toTarget:self withObject:_assets];    
 }
 
 #pragma mark -
